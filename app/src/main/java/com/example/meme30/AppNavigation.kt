@@ -13,6 +13,9 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.meme30.ui.screens.HomeScreen
+import com.example.meme30.ui.screens.MemesScreen
+import com.example.meme30.ui.screens.SearchScreen
 
 private const val TRANSITION_DURATION = 380
 

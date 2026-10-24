@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.meme30.R
@@ -48,8 +49,8 @@ fun BottomNavigation(
         ),
         NavItem(
             label = "Memes",
-            icon = R.drawable.rounded_library_music_24,
-            selectedIcon = R.drawable.rounded_library_music_24,
+            icon = R.drawable.rounded_sentiment_satisfied_24,
+            selectedIcon = R.drawable.rounded_sentiment_satisfied_24,
             screen = Screen.Memes
         )
     )
@@ -87,7 +88,11 @@ fun BottomNavigation(
                 onClick = {
                     if (!selected) {
                         navController.navigate(item.screen.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
                             launchSingleTop = true
+                            restoreState = true
                         }
                     }
                 },
