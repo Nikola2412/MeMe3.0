@@ -21,6 +21,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -35,10 +37,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.example.meme30.R
+import com.example.meme30.Routes
 
 internal data class FeedVideo(
     val title: String,
@@ -46,7 +53,6 @@ internal data class FeedVideo(
     val viewsAndAge: String,
     val duration: String,
     val category: String,
-    val emoji: String,
     val previewText: String,
     val colors: List<Color>,
     val avatarColor: Color
@@ -61,7 +67,6 @@ internal val feedVideos = listOf(
         viewsAndAge = "1.2M views · 2 days ago",
         duration = "0:38",
         category = "Comedy",
-        emoji = "🥱",
         previewText = "JUST ONE MORE",
         colors = listOf(Color(0xFF512DA8), Color(0xFFEC407A)),
         avatarColor = Color(0xFF7E57C2)
@@ -72,7 +77,6 @@ internal val feedVideos = listOf(
         viewsAndAge = "842K views · 5 hours ago",
         duration = "0:24",
         category = "Gaming",
-        emoji = "🎮",
         previewText = "WE DID IT!",
         colors = listOf(Color(0xFF00695C), Color(0xFF26A69A)),
         avatarColor = Color(0xFF00897B)
@@ -83,18 +87,16 @@ internal val feedVideos = listOf(
         viewsAndAge = "3.4M views · 1 week ago",
         duration = "1:12",
         category = "Music",
-        emoji = "🎧",
         previewText = "WAIT FOR IT...",
         colors = listOf(Color(0xFF1565C0), Color(0xFF42A5F5)),
         avatarColor = Color(0xFF1E88E5)
-    ),
+    )/*,
     FeedVideo(
         title = "The tiny dog that thinks it runs the house",
         creator = "Very Good Clips",
         viewsAndAge = "567K views · 3 days ago",
         duration = "0:51",
         category = "Viral",
-        emoji = "🐶",
         previewText = "THE BOSS",
         colors = listOf(Color(0xFFEF6C00), Color(0xFFFFCA28)),
         avatarColor = Color(0xFFF57C00)
@@ -105,7 +107,6 @@ internal val feedVideos = listOf(
         viewsAndAge = "290K views · 1 day ago",
         duration = "0:46",
         category = "Comedy",
-        emoji = "📱",
         previewText = "FOCUS MODE",
         colors = listOf(Color(0xFFAD1457), Color(0xFFEC407A)),
         avatarColor = Color(0xFFD81B60)
@@ -116,19 +117,22 @@ internal val feedVideos = listOf(
         viewsAndAge = "1.8M views · 6 days ago",
         duration = "0:33",
         category = "Gaming",
-        emoji = "🏆",
         previewText = "CLUTCH!",
         colors = listOf(Color(0xFF283593), Color(0xFF5C6BC0)),
         avatarColor = Color(0xFF3949AB)
     )
+    */
 )
 
 
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    navController: NavHostController
+) {
     var selectedCategory by remember { mutableStateOf("All") }
     val listState = rememberLazyListState()
+
 
     val isHeaderCollapsed by remember {
         derivedStateOf {
@@ -152,7 +156,9 @@ fun HomeScreen() {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        HomeHeader()
+        HomeHeader(
+            navController = navController
+        )
         CategoryFilters(
             selectedCategory = selectedCategory,
             onCategorySelected = { selectedCategory = it },
@@ -177,7 +183,9 @@ fun HomeScreen() {
 }
 
 @Composable
-private fun HomeHeader() {
+private fun HomeHeader(
+    navController: NavHostController
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -192,6 +200,16 @@ private fun HomeHeader() {
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.ExtraBold,
                 letterSpacing = (-0.5).sp
+            )
+        }
+        IconButton(
+            onClick = {
+                navController.navigate(Routes.SEARCH)
+            }
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.rounded_search_24),
+                contentDescription = "Search"
             )
         }
     }
@@ -267,11 +285,6 @@ internal fun VideoCard(video: FeedVideo) {
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = 1.5.sp
-                )
-                Text(
-                    text = video.emoji,
-                    modifier = Modifier.padding(top = 2.dp),
-                    fontSize = 62.sp
                 )
             }
             Surface(

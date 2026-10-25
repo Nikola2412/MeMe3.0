@@ -2,9 +2,13 @@
 package com.example.meme30.ui.components
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -25,8 +29,8 @@ import com.example.meme30.Screen
 
 private data class NavItem(
     val label: String,
-    @DrawableRes val icon: Int,
-    @DrawableRes val selectedIcon: Int,
+    @param:DrawableRes val icon: Int,
+    @param:DrawableRes val selectedIcon: Int,
     val screen: Screen
 )
 
@@ -42,12 +46,6 @@ fun BottomNavigation(
             screen = Screen.Home
         ),
         NavItem(
-            label = "Search",
-            icon = R.drawable.rounded_search_24,
-            selectedIcon = R.drawable.rounded_search_24,
-            screen = Screen.Search
-        ),
-        NavItem(
             label = "Memes",
             icon = R.drawable.rounded_sentiment_satisfied_24,
             selectedIcon = R.drawable.rounded_sentiment_satisfied_24,
@@ -57,64 +55,81 @@ fun BottomNavigation(
 
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
+    val isVisible = items.any { currentRoute == it.screen.route }
 
-    NavigationBar(
-        modifier = Modifier.navigationBarsPadding(),
-        containerColor = MaterialTheme.colorScheme.surface
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = slideInVertically(
+            animationSpec = tween(durationMillis = 250),
+            initialOffsetY = { height -> height }
+        ) + fadeIn(animationSpec = tween(durationMillis = 250))
     ) {
-        items.forEach { item ->
-            val selected = currentRoute == item.screen.route
+        NavigationBar(
+            modifier = Modifier.navigationBarsPadding(),
+            containerColor = MaterialTheme.colorScheme.surface
+        ) {
+            items.forEach { item ->
+                val selected = currentRoute == item.screen.route
 
-            val iconScale by animateFloatAsState(
-                targetValue = if (selected) 1.15f else 1f,
-                animationSpec = spring(
-                    dampingRatio = 0.55f,
-                    stiffness = 400f
-                ),
-                label = "iconScale"
-            )
+                val iconScale by animateFloatAsState(
+                    targetValue = if (selected) 1.15f else 1f,
+                    animationSpec = spring(
+                        dampingRatio = 0.55f,
+                        stiffness = 400f
+                    ),
+                    label = "iconScale"
+                )
 
-            val iconSize by animateDpAsState(
-                targetValue = if (selected) 27.dp else 24.dp,
-                animationSpec = spring(
-                    dampingRatio = 0.7f,
-                    stiffness = 400f
-                ),
-                label = "iconSize"
-            )
+                val iconSize by animateDpAsState(
+                    targetValue = if (selected) 27.dp else 24.dp,
+                    animationSpec = spring(
+                        dampingRatio = 0.7f,
+                        stiffness = 400f
+                    ),
+                    label = "iconSize"
+                )
 
-            NavigationBarItem(
-                selected = selected,
-                onClick = {
-                    if (!selected) {
-                        navController.navigate(item.screen.route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
+                NavigationBarItem(
+                    selected = selected,
+                    onClick = {
+                        if (!selected) {
+                            val returnedToExistingDestination =
+                                navController.popBackStack(
+                                    route = item.screen.route,
+                                    inclusive = false
+                                )
+
+                            if (!returnedToExistingDestination) {
+                                navController.navigate(item.screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
                             }
-                            launchSingleTop = true
-                            restoreState = true
                         }
-                    }
-                },
-                icon = {
-                    Icon(
-                        painter = painterResource(
-                            id = if (selected) {
-                                item.selectedIcon
-                            } else {
-                                item.icon
-                            }
-                        ),
-                        contentDescription = item.label,
-                        modifier = Modifier
-                            .scale(iconScale)
-                    )
-                },
-                label = {
-                    Text(item.label)
-                },
-                alwaysShowLabel = true
-            )
+                    },
+                    icon = {
+                        Icon(
+                            painter = painterResource(
+                                id = if (selected) {
+                                    item.selectedIcon
+                                } else {
+                                    item.icon
+                                }
+                            ),
+                            contentDescription = item.label,
+                            modifier = Modifier
+                                .scale(iconScale)
+                        )
+                    },
+                    label = {
+                        Text(item.label)
+                    },
+                    alwaysShowLabel = false
+                )
+            }
         }
     }
 }

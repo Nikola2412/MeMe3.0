@@ -24,10 +24,10 @@ private val NavigationEasing =
 
 private fun routeIndex(route: String?): Int? =
     when (route?.substringBefore("/")) {
-        MemeRoutes.HOME -> 0
-        MemeRoutes.SEARCH -> 1
-        MemeRoutes.MEMES -> 2
-        else -> null
+        Routes.HOME -> 0
+        Routes.SEARCH -> 1
+        Routes.MEMES -> 2
+        else -> 0
     }
 
 private fun enterPage(
@@ -86,7 +86,7 @@ fun AppNavigation(
 ) {
     NavHost(
         navController = navController,
-        startDestination = MemeRoutes.HOME,
+        startDestination = Routes.HOME,
         enterTransition = {
             enterPage(
                 initialState.destination.route,
@@ -116,15 +116,15 @@ fun AppNavigation(
             )
         }
     ) {
-        composable(MemeRoutes.HOME) {
-            HomeScreen()
+        composable(Routes.HOME) {
+            HomeScreen(navController)
         }
 
-        composable(MemeRoutes.SEARCH) {
+        composable(Routes.SEARCH) {
             SearchScreen()
         }
 
-        composable(MemeRoutes.MEMES) {
+        composable(Routes.MEMES) {
             MemesScreen()
         }
     }
