@@ -11,6 +11,8 @@ object Routes {
     const val MEME_DETAIL = "meme/{memeId}?creator={creator}"
     const val VIDEO_DETAIL = "video/{videoId}?title={title}&creator={creator}"
 
+    fun memeImageSharedKey(memeId: String): String = "meme-image-$memeId"
+
     fun memeDetail(meme: Meme): String =
         "meme/${Uri.encode(meme.id)}?creator=${Uri.encode(meme.creator)}"
 

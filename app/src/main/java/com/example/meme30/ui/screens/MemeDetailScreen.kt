@@ -1,7 +1,6 @@
 package com.example.meme30.ui.screens
 
 import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -11,17 +10,19 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.meme30.Routes
+import com.example.meme30.ui.components.BackTopAppBar
 import com.example.meme30.ui.components.RemoteImage
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun MemeDetailScreen(
     memeId: String,
@@ -35,12 +36,7 @@ fun MemeDetailScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        TextButton(
-            onClick = onBack,
-            modifier = Modifier.padding(start = 8.dp, top = 4.dp)
-        ) {
-            Text("← Back")
-        }
+        BackTopAppBar(onBack = onBack)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -55,9 +51,14 @@ fun MemeDetailScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1f)
+                        .clip(RoundedCornerShape(16.dp))
                         .sharedElement(
-                            sharedContentState = rememberSharedContentState(key = "meme-$memeId"),
-                            animatedVisibilityScope = animatedVisibilityScope
+                            sharedContentState = rememberSharedContentState(
+                                key = Routes.memeImageSharedKey(memeId)
+                            ),
+                            animatedVisibilityScope = animatedVisibilityScope,
+
+                            clipInOverlayDuringTransition = OverlayClip(RoundedCornerShape(16.dp))
                         )
                 )
             }
@@ -72,11 +73,6 @@ fun MemeDetailScreen(
                 text = creator,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Meme ID: $memeId",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

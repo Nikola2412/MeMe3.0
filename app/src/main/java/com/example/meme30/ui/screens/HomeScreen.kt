@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -60,13 +61,17 @@ private val thumbnailPalettes = listOf(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun HomeScreen(navController: NavHostController) {
+fun HomeScreen(
+    navController: NavHostController,
+    animatedVisibilityScope: AnimatedVisibilityScope
+) {
     var videos by remember { mutableStateOf<List<Video>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var reloadKey by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(reloadKey) {
+        animatedVisibilityScope.awaitEnterTransition()
         loading = true
         errorMessage = null
         try {
@@ -179,7 +184,10 @@ private fun HomeHeader(navController: NavHostController) {
 
 @Composable
 internal fun VideoCard(video: Video, onClick: () -> Unit) {
-    val colors = thumbnailPalettes[Math.floorMod(video.id.hashCode(), thumbnailPalettes.size)]
+    val colors = remember(video.id) {
+        thumbnailPalettes[Math.floorMod(video.id.hashCode(), thumbnailPalettes.size)]
+    }
+    val thumbnailBrush = remember(colors) { Brush.linearGradient(colors) }
     ElevatedCard(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth()
@@ -190,7 +198,7 @@ internal fun VideoCard(video: Video, onClick: () -> Unit) {
                     .fillMaxWidth()
                     .aspectRatio(16f / 9f)
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Brush.linearGradient(colors))
+                    .background(thumbnailBrush)
             ) {
                 Text(
                     text = "▶",

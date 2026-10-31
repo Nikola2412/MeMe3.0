@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
@@ -25,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.unit.dp
 import com.example.meme30.data.BackendApi
+import com.example.meme30.ui.components.BackTopAppBar
 
 @Composable
 fun VideoDetailScreen(
@@ -46,12 +46,7 @@ fun VideoDetailScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        TextButton(
-            onClick = onBack,
-            modifier = Modifier.padding(start = 8.dp, top = 4.dp)
-        ) {
-            Text("← Back")
-        }
+        BackTopAppBar(onBack = onBack)
         Box(
             modifier = Modifier
                 .fillMaxWidth()

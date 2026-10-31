@@ -2,8 +2,8 @@
 package com.example.meme30
 
 import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
@@ -11,6 +11,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -19,11 +23,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.meme30.ui.screens.HomeScreen
 import com.example.meme30.ui.screens.MemeDetailScreen
+import com.example.meme30.ui.screens.MemesScreenState
 import com.example.meme30.ui.screens.MemesScreen
 import com.example.meme30.ui.screens.SearchScreen
 import com.example.meme30.ui.screens.VideoDetailScreen
 
-private const val TRANSITION_DURATION = 380
+private const val TRANSITION_DURATION = 300
 
 private val NavigationEasing =
     CubicBezierEasing(0.2f, 0f, 0f, 1f)
@@ -33,8 +38,8 @@ private fun routeIndex(route: String?): Int? =
         Routes.HOME -> 0
         Routes.SEARCH -> 1
         Routes.MEMES -> 2
-        Routes.MEME_DETAIL.substringBefore("/") -> 2
-        Routes.VIDEO_DETAIL.substringBefore("/") -> 0
+        Routes.MEME_DETAIL.substringBefore("/") -> 3
+        Routes.VIDEO_DETAIL.substringBefore("/") -> 4
         else -> 0
     }
 
@@ -93,8 +98,13 @@ private fun exitPage(
 fun AppNavigation(
     navController: NavHostController
 ) {
-    SharedTransitionLayout {
+    SharedTransitionLayout(
+        modifier = Modifier
+            .fillMaxSize()
+            .clipToBounds()
+    ) {
         val sharedTransitionScope = this
+        val memesScreenState = remember { MemesScreenState() }
         NavHost(
             navController = navController,
             startDestination = Routes.HOME,
@@ -128,16 +138,23 @@ fun AppNavigation(
             }
         ) {
             composable(Routes.HOME) {
-                HomeScreen(navController)
+                HomeScreen(
+                    navController = navController,
+                    animatedVisibilityScope = this
+                )
             }
 
             composable(Routes.SEARCH) {
-                SearchScreen(navController)
+                SearchScreen(
+                    navController = navController,
+                    animatedVisibilityScope = this
+                )
             }
 
             composable(Routes.MEMES) {
                 val animatedVisibilityScope = this
                 MemesScreen(
+                    screenState = memesScreenState,
                     onMemeClick = { meme ->
                         navController.navigate(Routes.memeDetail(meme))
                     },

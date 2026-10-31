@@ -7,8 +7,12 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -17,6 +21,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
@@ -62,7 +67,19 @@ fun BottomNavigation(
         enter = slideInVertically(
             animationSpec = tween(durationMillis = 250),
             initialOffsetY = { height -> height }
-        ) + fadeIn(animationSpec = tween(durationMillis = 250))
+        ) + fadeIn(tween(durationMillis = 250)) +
+            expandVertically(
+                animationSpec = tween(durationMillis = 250),
+                expandFrom = Alignment.Bottom
+            ),
+        exit = slideOutVertically(
+            animationSpec = tween(durationMillis = 250),
+            targetOffsetY = { height -> height }
+        ) + fadeOut(tween(durationMillis = 250)) +
+            shrinkVertically(
+                animationSpec = tween(durationMillis = 250),
+                shrinkTowards = Alignment.Bottom
+            )
     ) {
         NavigationBar(
             modifier = Modifier.navigationBarsPadding(),
@@ -119,9 +136,7 @@ fun BottomNavigation(
                                     item.icon
                                 }
                             ),
-                            contentDescription = item.label,
-                            modifier = Modifier
-                                .scale(iconScale)
+                            contentDescription = item.label
                         )
                     },
                     label = {
