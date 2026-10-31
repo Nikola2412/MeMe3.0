@@ -22,6 +22,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -60,7 +62,7 @@ internal class MemesScreenState {
 }
 
 @OptIn(
-    ExperimentalSharedTransitionApi::class,
+    ExperimentalSharedTransitionApi::class, ExperimentalMaterial3ExpressiveApi::class,
 )
 @Composable
 internal fun MemesScreen(
@@ -178,10 +180,7 @@ internal fun MemesScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "Loading memes…",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                LoadingIndicator()
             }
             initialError != null -> Column(
                 modifier = Modifier
