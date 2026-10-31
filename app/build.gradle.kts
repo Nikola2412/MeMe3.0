@@ -9,6 +9,10 @@ android {
         version = release(37)
     }
 
+    val backendBaseUrl = providers.gradleProperty("MEME_BACKEND_URL")
+        .orElse("http://192.168.1.6:3001")
+        .get()
+
     defaultConfig {
         applicationId = "com.example.meme30"
         minSdk = 31
@@ -17,6 +21,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "BACKEND_BASE_URL", "\"$backendBaseUrl\"")
     }
 
     buildTypes {
@@ -33,13 +38,15 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.compose.material3)
+    implementation("androidx.compose.material3:material3:1.5.0-alpha22")
+    implementation("androidx.compose.animation:animation")
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)

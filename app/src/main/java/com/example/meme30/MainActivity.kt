@@ -13,6 +13,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.example.meme30.ui.components.BottomNavigation
+import com.example.meme30.ui.components.LocalNetworkPermissionGate
 import com.example.meme30.ui.theme.MeMe30Theme
 
 class MainActivity : ComponentActivity() {
@@ -22,22 +23,24 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MeMe30Theme {
-                val navController = rememberNavController()
+                LocalNetworkPermissionGate {
+                    val navController = rememberNavController()
 
-                Scaffold(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .imePadding(),
-                    bottomBar = {
-                        BottomNavigation(navController)
-                    }
-                ) { innerPadding ->
-                    Box(
+                    Scaffold(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(innerPadding)
-                    ) {
-                        AppNavigation(navController)
+                            .imePadding(),
+                        bottomBar = {
+                            BottomNavigation(navController)
+                        }
+                    ) { innerPadding ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding)
+                        ) {
+                            AppNavigation(navController)
+                        }
                     }
                 }
             }

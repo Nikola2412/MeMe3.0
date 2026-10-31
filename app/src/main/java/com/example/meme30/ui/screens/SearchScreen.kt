@@ -1,4 +1,3 @@
-
 package com.example.meme30.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
@@ -8,31 +7,32 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,54 +43,62 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.example.meme30.R
+import com.example.meme30.Routes
+import com.example.meme30.data.BackendApi
+import com.example.meme30.data.Video
+import kotlinx.coroutines.CancellationException
+import org.json.JSONException
+import java.io.IOException
 
-private val searchCategories =
-    listOf("All") + feedVideos.map { it.category }.distinct()
-
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun SearchScreen() {
+fun SearchScreen(navController: NavHostController) {
     var query by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf("All") }
-
+    var videos by remember { mutableStateOf<List<Video>>(emptyList()) }
+    var loading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var reloadKey by remember { mutableIntStateOf(0) }
     val focusManager = LocalFocusManager.current
-
     val listState = rememberLazyListState()
 
     val isHeaderCollapsed by remember {
         derivedStateOf {
             listState.firstVisibleItemIndex > 0 ||
-                    listState.firstVisibleItemScrollOffset > 0
+                listState.firstVisibleItemScrollOffset > 0
         }
     }
-
     val searchFieldVerticalPadding by animateDpAsState(
         targetValue = if (isHeaderCollapsed) 4.dp else 12.dp,
         label = "searchFieldPadding"
     )
-
     val normalizedQuery = query.trim()
-
-    val visibleVideos = remember(normalizedQuery, selectedCategory) {
-        feedVideos.filter { video ->
-            val matchesQuery = normalizedQuery.isBlank() ||
-                    video.title.contains(normalizedQuery, ignoreCase = true) ||
-                    video.creator.contains(normalizedQuery, ignoreCase = true) ||
-                    video.category.contains(normalizedQuery, ignoreCase = true) ||
-                    video.previewText.contains(normalizedQuery, ignoreCase = true)
-
-            val matchesCategory =
-                selectedCategory == "All" ||
-                        video.category == selectedCategory
-
-            matchesQuery && matchesCategory
+    val visibleVideos = remember(normalizedQuery, videos) {
+        videos.filter { video ->
+            normalizedQuery.isBlank() ||
+                video.title.contains(normalizedQuery, ignoreCase = true) ||
+                video.creator.contains(normalizedQuery, ignoreCase = true)
         }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // Collapsible heading
+    LaunchedEffect(reloadKey) {
+        loading = true
+        errorMessage = null
+        try {
+            videos = BackendApi.getVideos()
+        } catch (exception: IOException) {
+            errorMessage = exception.message ?: "Could not load videos."
+        } catch (exception: JSONException) {
+            errorMessage = "The backend returned invalid video data."
+        } catch (exception: CancellationException) {
+            throw exception
+        } finally {
+            loading = false
+        }
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
         AnimatedVisibility(
             visible = !isHeaderCollapsed,
             enter = expandVertically() + fadeIn(),
@@ -108,9 +116,8 @@ fun SearchScreen() {
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
-
                 Text(
-                    text = "Search videos, creators, or categories",
+                    text = "Search videos and creators",
                     modifier = Modifier.padding(top = 4.dp),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -118,7 +125,6 @@ fun SearchScreen() {
             }
         }
 
-        // Search field
         OutlinedTextField(
             value = query,
             onValueChange = { query = it },
@@ -126,127 +132,64 @@ fun SearchScreen() {
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
                 .padding(vertical = searchFieldVerticalPadding),
-            placeholder = {
-                Text("Try \"gaming\" or \"dog\"")
-            },
+            placeholder = { Text("Search videos or creators") },
             leadingIcon = {
                 Icon(
-                    painter = painterResource(
-                        id = R.drawable.rounded_search_24
-                    ),
+                    painter = painterResource(id = R.drawable.rounded_search_24),
                     contentDescription = "Search videos"
                 )
             },
             trailingIcon = {
                 if (query.isNotEmpty()) {
-                    /*
-                    IconButton (
-                        onClick = {
-                            query = ""
-                            selectedCategory = "All"
-                        }
-                    ) {
-                        Icon(
-                            painter = painterResource(
-                                id = R.drawable.rounded_search_24
-                            ),
-                            contentDescription = "Clear search"
-                        )
-                    }
-                     */
-                    TextButton(
-                        onClick = {
-                            query = ""
-                            selectedCategory = "All"
-                        }
-                    ) {
-                        Text("Clear filters")
+                    TextButton(onClick = { query = "" }) {
+                        Text("Clear")
                     }
                 }
             },
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Search
-            ),
-            keyboardActions = KeyboardActions(
-                onSearch = {
-                    focusManager.clearFocus()
-                }
-            ),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
             singleLine = true,
             shape = MaterialTheme.shapes.large
         )
 
-        // Horizontally scrollable categories
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            searchCategories.forEach { category ->
-                FilterChip(
-                    selected = selectedCategory == category,
-                    onClick = {
-                        selectedCategory = category
-                    },
-                    label = {
-                        Text(category)
-                    }
-                )
-            }
-        }
-
-        // Results or empty state
-        if (visibleVideos.isEmpty()) {
-            Box(
+        when {
+            loading -> Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
                 contentAlignment = Alignment.Center
             ) {
-                Column(
-                    modifier = Modifier.padding(horizontal = 28.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                LoadingIndicator()
+            }
+            errorMessage != null -> Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(errorMessage.orEmpty(), color = MaterialTheme.colorScheme.error)
+                Button(
+                    onClick = { reloadKey++ },
+                    modifier = Modifier.padding(top = 12.dp)
                 ) {
-
-                    Text(
-                        text = if (feedVideos.isEmpty()) {
-                            "No videos yet"
-                        } else {
-                            "No videos found"
-                        },
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold
-                    )
-
-                    Text(
-                        text = if (feedVideos.isEmpty()) {
-                            "Check back later for new videos."
-                        } else {
-                            "Try a different search term or category."
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    if (normalizedQuery.isNotBlank() ||
-                        selectedCategory != "All"
-                    ) {
-                        TextButton(
-                            onClick = {
-                                query = ""
-                                selectedCategory = "All"
-                            }
-                        ) {
-                            Text("Clear filters")
-                        }
-                    }
+                    Text("Try again")
                 }
             }
-        } else {
-            LazyColumn(
+            visibleVideos.isEmpty() -> Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = if (videos.isEmpty()) "No videos yet." else "No videos found.",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+            else -> LazyColumn(
                 state = listState,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -259,13 +202,10 @@ fun SearchScreen() {
                 ),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(
-                    items = visibleVideos,
-                    key = { video ->
-                        "${video.creator}:${video.title}"
+                items(items = visibleVideos, key = { video -> video.id }) { video ->
+                    VideoCard(video) {
+                        navController.navigate(Routes.videoDetail(video))
                     }
-                ) { video ->
-                    VideoCard(video)
                 }
             }
         }
