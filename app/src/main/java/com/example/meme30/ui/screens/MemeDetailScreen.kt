@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.meme30.Routes
+import com.example.meme30.data.BackendApi
 import com.example.meme30.ui.components.BackTopAppBar
 import com.example.meme30.ui.components.RemoteImage
 
@@ -39,10 +40,11 @@ fun MemeDetailScreen(
     fun shareMeme() {
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
-            putExtra(
+            /*putExtra(
                 Intent.EXTRA_TEXT,
                 Routes.memeDeepLink(memeId, creator)
-            )
+            )*/
+            putExtra(Intent.EXTRA_TEXT, BackendApi.getMemeUrl(memeId))
         }
         context.startActivity(
             Intent.createChooser(shareIntent, "Share meme")
