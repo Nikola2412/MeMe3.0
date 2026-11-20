@@ -27,11 +27,18 @@ fun RemoteImage(
     maxImageDimensionPx: Int = 480,
     contentScale: ContentScale = ContentScale.Crop
 ) {
-    var bitmap by remember(memeId) { mutableStateOf<Bitmap?>(null) }
-    var loading by remember(memeId) { mutableStateOf(true) }
-    var failed by remember(memeId) { mutableStateOf(false) }
+    val cachedBitmap = remember(memeId, maxImageDimensionPx) {
+        BackendApi.getCachedMemeImage(memeId, maxImageDimensionPx)
+    }
+    var bitmap by remember(memeId, maxImageDimensionPx) {
+        mutableStateOf<Bitmap?>(cachedBitmap)
+    }
+    var loading by remember(memeId, maxImageDimensionPx) {
+        mutableStateOf(cachedBitmap == null)
+    }
+    var failed by remember(memeId, maxImageDimensionPx) { mutableStateOf(false) }
 
-    LaunchedEffect(memeId) {
+    LaunchedEffect(memeId, maxImageDimensionPx) {
         try {
             bitmap = BackendApi.getMemeImage(memeId, maxImageDimensionPx)
         } catch (_: IOException) {

@@ -127,6 +127,11 @@ object BackendApi {
             }
         }
 
+    fun getCachedMemeImage(
+        memeId: String,
+        maxDimensionPx: Int = 480
+    ): Bitmap? = memeImageCache.get("$memeId:$maxDimensionPx")
+
     fun videoStreamUrl(videoId: String): String {
         val encodedId = Uri.encode(videoId)
         return "$baseUrl/android_id_videa=$encodedId"
