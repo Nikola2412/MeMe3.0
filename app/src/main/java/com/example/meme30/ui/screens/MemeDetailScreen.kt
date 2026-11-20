@@ -1,5 +1,6 @@
 package com.example.meme30.ui.screens
 
+import android.content.Intent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
@@ -13,10 +14,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.meme30.Routes
@@ -31,12 +34,34 @@ fun MemeDetailScreen(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
+    val context = LocalContext.current
+
+    fun shareMeme() {
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(
+                Intent.EXTRA_TEXT,
+                Routes.memeDeepLink(memeId, creator)
+            )
+        }
+        context.startActivity(
+            Intent.createChooser(shareIntent, "Share meme")
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        BackTopAppBar(onBack = onBack)
+        BackTopAppBar(
+            onBack = onBack,
+            actions = {
+                TextButton(onClick = ::shareMeme) {
+                    Text("Share")
+                }
+            }
+        )
         Box(
             modifier = Modifier
                 .fillMaxWidth()

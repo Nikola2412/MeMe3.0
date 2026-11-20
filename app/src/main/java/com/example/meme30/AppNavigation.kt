@@ -21,6 +21,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.example.meme30.ui.screens.HomeScreen
 import com.example.meme30.ui.screens.MemeDetailScreen
 import com.example.meme30.ui.screens.MemesScreenState
@@ -182,6 +183,12 @@ fun AppNavigation(
                     navArgument("creator") {
                         type = NavType.StringType
                         defaultValue = ""
+                    }
+                ),
+                deepLinks = listOf(
+                    navDeepLink {
+                        uriPattern =
+                            "meme30://meme/{memeId}?creator={creator}"
                     }
                 )
             ) { entry ->

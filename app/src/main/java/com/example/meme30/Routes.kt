@@ -18,6 +18,10 @@ object Routes {
     fun memeDetail(meme: Meme): String =
         "meme/${Uri.encode(meme.id)}?creator=${Uri.encode(meme.creator)}"
 
+    fun memeDeepLink(memeId: String, creator: String): String =
+        "meme30://meme/${Uri.encode(memeId)}" +
+            "?creator=${Uri.encode(creator)}"
+
     fun videoDetail(video: Video): String =
         "video/${Uri.encode(video.id)}" +
             "?title=${Uri.encode(video.title)}&creator=${Uri.encode(video.creator)}"

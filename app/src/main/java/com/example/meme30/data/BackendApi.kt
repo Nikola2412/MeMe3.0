@@ -14,6 +14,8 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.charset.StandardCharsets
+import java.net.URLEncoder
+import org.json.JSONObject
 
 data class Meme(
     val id: String,
@@ -39,6 +41,35 @@ object BackendApi {
     }
 
     const val MEME_PAGE_SIZE = 20
+
+    fun getMemeUrl(memeId: String): String =
+        "$baseUrl/id_memea=${Uri.encode(memeId)}"
+
+    suspend fun authenticate(username: String, password: String): String? =
+        withContext(Dispatchers.IO) {
+            val response = postForm(
+                url = "$baseUrl/android_auth",
+                fields = mapOf(
+                    "username" to username,
+                    "password" to password
+                )
+            )
+            val id = JSONObject(response).optString("id", "-1")
+            id.takeUnless { it == "-1" }
+        }
+
+    suspend fun createAccount(username: String, password: String): Boolean =
+        withContext(Dispatchers.IO) {
+            postForm(
+                url = "$baseUrl/create",
+                fields = mapOf(
+                    "username" to username,
+                    "password" to password
+                ),
+                expectJson = false
+            )
+            true
+        }
 
     suspend fun getMemes(offset: Int): List<Meme> = withContext(Dispatchers.IO) {
         require(offset >= 0) { "Meme offset cannot be negative." }
@@ -130,6 +161,37 @@ object BackendApi {
                 throw IOException("Backend request failed with HTTP $statusCode.")
             }
             return connection.inputStream.use { it.readBytes() }
+        } finally {
+            connection.disconnect()
+        }
+    }
+
+    private fun postForm(
+        url: String,
+        fields: Map<String, String>,
+        expectJson: Boolean = true
+    ): String {
+        val body = fields.entries.joinToString("&") { (key, value) ->
+            "${URLEncoder.encode(key, "UTF-8")}=${URLEncoder.encode(value, "UTF-8")}"
+        }
+        val connection = URL(url).openConnection() as HttpURLConnection
+        connection.requestMethod = "POST"
+        connection.connectTimeout = 15_000
+        connection.readTimeout = 30_000
+        connection.doOutput = true
+        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+        connection.outputStream.use { it.write(body.toByteArray(StandardCharsets.UTF_8)) }
+
+        try {
+            val statusCode = connection.responseCode
+            if (statusCode !in 200..299) {
+                throw IOException("Backend request failed with HTTP $statusCode.")
+            }
+            val response = connection.inputStream.use { it.readBytes() }
+            if (expectJson) {
+                return String(response, StandardCharsets.UTF_8)
+            }
+            return ""
         } finally {
             connection.disconnect()
         }

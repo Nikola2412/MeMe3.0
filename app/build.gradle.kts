@@ -18,7 +18,7 @@ android {
         minSdk = 31
         targetSdk = 37
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "BACKEND_BASE_URL", "\"$backendBaseUrl\"")
@@ -27,7 +27,8 @@ android {
     buildTypes {
         release {
             optimization {
-
+                isMinifyEnabled = true
+                isShrinkResources = true
                 //this is fucked
                 enable = false
                 //packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
@@ -47,7 +48,7 @@ android {
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
-    implementation("androidx.compose.material3:material3:1.5.0-alpha22")
+    implementation("androidx.compose.material3:material3:1.5.0")
     implementation("androidx.compose.animation:animation")
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
