@@ -26,6 +26,8 @@ import com.example.meme30.ui.screens.MemeDetailScreen
 import com.example.meme30.ui.screens.MemesScreenState
 import com.example.meme30.ui.screens.MemesScreen
 import com.example.meme30.ui.screens.SearchScreen
+import com.example.meme30.ui.screens.SettingsScreen
+import com.example.meme30.ui.screens.UserScreen
 import com.example.meme30.ui.screens.VideoDetailScreen
 
 private const val TRANSITION_DURATION = 300
@@ -38,8 +40,10 @@ private fun routeIndex(route: String?): Int? =
         Routes.HOME -> 0
         Routes.SEARCH -> 1
         Routes.MEMES -> 2
-        Routes.MEME_DETAIL.substringBefore("/") -> 3
-        Routes.VIDEO_DETAIL.substringBefore("/") -> 4
+        Routes.USER -> 3
+        Routes.SETTINGS -> 4
+        Routes.MEME_DETAIL.substringBefore("/") -> 5
+        Routes.VIDEO_DETAIL.substringBefore("/") -> 6
         else -> 0
     }
 
@@ -161,6 +165,14 @@ fun AppNavigation(
                     sharedTransitionScope = sharedTransitionScope,
                     animatedVisibilityScope = animatedVisibilityScope
                 )
+            }
+
+            composable(Routes.USER) {
+                UserScreen(navController = navController)
+            }
+
+            composable(Routes.SETTINGS) {
+                SettingsScreen(onBack = { navController.popBackStack() })
             }
 
             composable(

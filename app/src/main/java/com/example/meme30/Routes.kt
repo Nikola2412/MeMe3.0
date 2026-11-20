@@ -8,6 +8,8 @@ object Routes {
     const val HOME = "home"
     const val SEARCH = "search"
     const val MEMES = "memes"
+    const val USER = "user"
+    const val SETTINGS = "settings"
     const val MEME_DETAIL = "meme/{memeId}?creator={creator}"
     const val VIDEO_DETAIL = "video/{videoId}?title={title}&creator={creator}"
 

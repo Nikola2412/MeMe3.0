@@ -55,6 +55,12 @@ fun BottomNavigation(
             icon = R.drawable.rounded_sentiment_satisfied_24,
             selectedIcon = R.drawable.rounded_sentiment_satisfied_24,
             screen = Screen.Memes
+        ),
+        NavItem(
+            label = "User",
+            icon = R.drawable.rounded_account_circle_24,
+            selectedIcon = R.drawable.rounded_account_circle_24,
+            screen = Screen.User
         )
     )
 
